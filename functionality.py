@@ -45,6 +45,46 @@ def get_top_N_nodes(G, N):
     top_n_nodes = sorted(degree.items(), key=lambda x:x[1], reverse=True)[:N]
     return top_n_nodes
 
+
+# dijkstra algorithm in order to find shortest path for functionality 3
+def dijkstra_shortest_path(graph, start, end):
+    adjacency_list = graph
+
+    # Initialize distances with infinite values
+    distances = {node: float('inf') for node in adjacency_list}
+    distances[start] = 0
+
+    # Priority queue for Dijkstra's algorithm
+    priority_queue = deque([(start, 0)])
+
+    # Main loop
+    while priority_queue:
+        # Get the node with the smallest distance from the priority queue
+        current_node, current_distance = priority_queue.popleft()
+
+        # Explore neighbors
+        for neighbor in adjacency_list[current_node]:
+            new_distance = distances[current_node] + 1  # Update distance to 1 for each edge
+
+            # Update the distance if the new distance is smaller
+            if new_distance < distances[neighbor]:
+                distances[neighbor] = new_distance
+                # Add the neighbor to the priority queue with its updated distance
+                priority_queue.append((neighbor, new_distance))
+
+    # Reconstruct the shortest path
+    path = []
+    current_node = end
+    while current_node != start:
+        path.insert(0, current_node)
+
+        # Find the predecessor with the smallest distance
+        predecessors = [node for node in adjacency_list[current_node] if distances[node] == distances[current_node] - 1]
+        current_node = min(predecessors) if predecessors else None
+
+    path.insert(0, start)
+    return path, distances[end]
+
 def func3(G, authors_a, a_1, a_n, N):
     # Filter the graph to the top N nodes
     if N:
@@ -67,19 +107,20 @@ def func3(G, authors_a, a_1, a_n, N):
         
         # Traverse the graph in the specific order
         for node in order:
+
             if current_path[-1] == node:
                 continue  # Skip if the next node is the same as the current
             try:
                 # Find the shortest path to the next node in the order
-                path = nx.shortest_path(G, source=current_path[-1], target=node)
+                path, _ = dijkstra_shortest_path(G, start=current_path[-1], end=node)
                 current_length += len(path) - 1  # Exclude the starting node from the count
                 current_path.extend(path[1:])  # Append the path excluding the starting node
-            except nx.NetworkXNoPath:
+            except IndexError:
                 break  # Exit if no path exists
         
         # Attempt to reach the final node
         try:
-            final_path = nx.shortest_path(G, source=current_path[-1], target=a_n)
+            final_path, _ = dijkstra_shortest_path(G, start=current_path[-1], end=a_n)
             current_length += len(final_path) - 1
             current_path.extend(final_path[1:])
             
@@ -87,7 +128,7 @@ def func3(G, authors_a, a_1, a_n, N):
             if current_length < shortest_length:
                 shortest_length = current_length
                 shortest_path = current_path
-        except nx.NetworkXNoPath:
+        except IndexError:
             continue
     
     # Return the result
