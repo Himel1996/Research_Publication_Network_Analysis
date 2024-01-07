@@ -25,7 +25,7 @@ The repository contains the following key files and folders:
 
 - `CommandLine.sh`: Bash script containing solution for command line question
   
-- `clq-output.png`: Output image for the CommandLine question
+- `CommandLine_screenshots`: Folder containing Output images for the CommandLine question
 
 
 
